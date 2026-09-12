@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perspective Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12131a;
+    --bg-raised:#1c1e29;
+    --line:#2c2e3c;
+    --text:#f2efe9;
+    --text-muted:#9497ac;
+    --yellow:#ffc93c;
+    --coral:#ff6b5b;
+    --mint:#5ee6b0;
+    --lav:#b39cff;
+    --sky:#6fc6ff;
+    --pink:#ff8fc7;
+    --tan:#ffb27a;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  a{color:inherit;}
+  button{
+    font-family:inherit;
+    cursor:pointer;
+  }
+  :focus-visible{
+    outline:2px solid var(--yellow);
+    outline-offset:2px;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+  }
+
+  .wrap{
+    max-width:1080px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+
+  /* header */
+  header{
+    padding:22px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .header-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .logo{
+    font-size:20px;
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+  }
+  .logo span{
+    color:var(--yellow);
+  }
+  nav{
+    display:flex;
+    gap:24px;
+    align-items:center;
+  }
+  nav button{
+    background:none;
+    border:none;
+    color:var(--text-muted);
+    font-size:15px;
+    padding:6px 0;
+  }
+  nav button:hover{color:var(--text);}
+  .fav-count{
+    background:var(--bg-raised);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:6px 14px;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  /* hero */
+  .hero{
+    padding:64px 0 56px;
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:56px;
+    align-items:center;
+  }
+  .hero h1{
+    font-size:clamp(34px,5vw,54px);
+    line-height:1.05;
+    margin:0 0 20px;
+  }
+  .hero p.sub{
+    color:var(--text-muted);
+    font-size:17px;
+    max-width:46ch;
+    margin:0 0 28px;
+  }
+  .primary-btn{
+    background:var(--yellow);
+    color:#1a1608;
+    border:none;
+    border-radius:999px;
+    padding:16px 28px;
+    font-size:16px;
+    font-weight:600;
+    font-family:'Space Grotesk',sans-serif;
+    transition:transform .15s ease;
+  }
+  .primary-btn:hover{transform:translateY(-2px);}
+  .primary-btn:active{transform:translateY(0);}
+
+  .spotlight{
+    background:var(--bg-raised);
+    border:2px solid var(--line);
+    border-radius:14px;
+    padding:28px;
+    transform:rotate(-2deg);
+    position:relative;
+    min-height:220px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .spotlight::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:14px;
+    border:2px solid var(--cat-color, var(--yellow));
+    transform:rotate(3deg);
+    z-index:-1;
+    opacity:0.5;
+  }
+  .spotlight .cat-tag{
+    font-size:13px;
+    color:var(--cat-color, var(--yellow));
+    margin-bottom:12px;
+    font-weight:600;
+  }
+  .spotlight .setup{
+    font-size:19px;
+    color:var(--text-muted);
+    margin:0 0 10px;
+  }
+  .spotlight .punchline{
+    font-size:21px;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    margin:0;
+  }
+  .spotlight-fade{
+    animation:fadeIn .35s ease;
+  }
+  @keyframes fadeIn{
+    from{opacity:0; transform:translateY(6px) rotate(-2deg);}
+    to{opacity:1; transform:translateY(0) rotate(-2deg);}
+  }
+
+  /* categories */
+  .cat-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    padding:8px 0 36px;
+  }
+  .chip{
+    background:var(--bg-raised);
+    border:1px solid var(--line);
+    color:var(--text);
+    border-radius:999px;
+    padding:9px 16px;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .chip .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--dot-color,var(--yellow));
+    display:inline-block;
+  }
+  .chip.active{
+    border-color:var(--dot-color,var(--yellow));
+    background:rgba(255,255,255,0.03);
+  }
+  .chip:hover{border-color:var(--text-muted);}
+
+  /* section title */
+  .section-title{
+    font-size:22px;
+    margin:0 0 18px;
+  }
+
+  /* entry grid */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:16px;
+    padding-bottom:80px;
+  }
+  @media (max-width:720px){
+    .grid{grid-template-columns:1fr;}
+    .hero{grid-template-columns:1fr; padding-top:40px;}
+    .spotlight{transform:none; order:-1;}
+    .spotlight::before{transform:none;}
+  }
+  .card{
+    background:var(--bg-raised);
+    border:1px solid var(--line);
+    border-left:4px solid var(--cat-color,var(--yellow));
+    border-radius:6px;
+    padding:20px 20px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .card .cat-tag{
+    font-size:12.5px;
+    color:var(--cat-color,var(--yellow));
+    font-weight:600;
+  }
+  .card .setup{
+    color:var(--text-muted);
+    font-size:15px;
+    margin:0;
+  }
+  .card .punchline{
+    font-size:16px;
+    margin:0;
+    font-weight:500;
+  }
+  .card-actions{
+    display:flex;
+    gap:14px;
+    margin-top:6px;
+  }
+  .card-actions button{
+    background:none;
+    border:none;
+    color:var(--text-muted);
+    font-size:13px;
+    display:flex;
+    align-items:center;
+    gap:5px;
+    padding:4px 0;
+  }
+  .card-actions button:hover{color:var(--text);}
+  .card-actions button.saved{color:var(--coral);}
+
+  /* favorites drawer */
+  .drawer-overlay{
+    position:fixed; inset:0;
+    background:rgba(10,10,14,0.6);
+    display:none;
+    z-index:20;
+  }
+  .drawer-overlay.open{display:block;}
+  .drawer{
+    position:fixed;
+    top:0; right:0;
+    height:100%;
+    width:380px;
+    max-width:90vw;
+    background:var(--bg-raised);
+    border-left:1px solid var(--line);
+    z-index:21;
+    transform:translateX(100%);
+    transition:transform .25s ease;
+    display:flex;
+    flex-direction:column;
+  }
+  .drawer.open{transform:translateX(0);}
+  .drawer-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px;
+    border-bottom:1px solid var(--line);
+  }
+  .drawer-head button{
+    background:none;border:none;color:var(--text-muted);font-size:20px;
+  }
+  .drawer-body{
+    padding:16px 20px;
+    overflow-y:auto;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .drawer-empty{
+    color:var(--text-muted);
+    font-size:15px;
+    padding-top:20px;
+  }
+
+  footer{
+    border-top:1px solid var(--line);
+    padding:28px 0 40px;
+    color:var(--text-muted);
+    font-size:14px;
+  }
+
+  .toast{
+    position:fixed;
+    bottom:24px;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--yellow);
+    color:#1a1608;
+    padding:10px 20px;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:600;
+    opacity:0;
+    transition:opacity .2s ease, transform .2s ease;
+    z-index:30;
+    pointer-events:none;
+  }
+  .toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap header-row">
+    <div class="logo display">Perspective <span>Check</span></div>
+    <nav>
+      <button onclick="scrollToId('categories')">Categories</button>
+      <button onclick="scrollToId('feed')">Browse</button>
+      <button class="fav-count" onclick="openDrawer()">♥ <span id="favCount">0</span> saved</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <div>
+      <h1>Congrats. You technically have everything.</h1>
+      <p class="sub">A small, ridiculous website for whenever you catch yourself wanting the thing you don't have instead of noticing the thing you do. No lectures. Just receipts.</p>
+      <button class="primary-btn" onclick="spin()">Spin for perspective</button>
+    </div>
+    <div class="spotlight" id="spotlight">
+      <div class="cat-tag" id="spotCat">Random Acts of Perspective</div>
+      <p class="setup" id="spotSetup">"I'm bored."</p>
+      <p class="punchline" id="spotPunch">You have access to every book, film, and song ever recorded, instantly, and you're bored. Impressive, honestly.</p>
+    </div>
+  </section>
+
+  <section id="categories">
+    <div class="cat-row" id="catRow"></div>
+  </section>
+
+  <section id="feed">
+    <h2 class="section-title" id="feedTitle">All entries</h2>
+    <div class="grid" id="grid"></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    Open whenever you're feeling greedy, needy, or a little too main-character. Close whenever you feel like laughing instead.
+  </div>
+</footer>
+
+<div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <strong>Saved</strong>
+    <button onclick="closeDrawer()" aria-label="Close">×</button>
+  </div>
+  <div class="drawer-body" id="drawerBody">
+    <div class="drawer-empty">You haven't saved anything yet. Very on-brand.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Copied</div>
+
+<script>
+const categories = [
+  { id:'main-character', name:'Main Character Syndrome', color:'#ff6b5b' },
+  { id:'grass-greener', name:'The Grass Is Always Greener', color:'#5ee6b0' },
+  { id:'first-world', name:'First World Problems, Fancy Edition', color:'#6fc6ff' },
+  { id:'glow-up', name:'Glow-Up Guilt', color:'#ff8fc7' },
+  { id:'upgrade-trap', name:'The Upgrade Trap', color:'#ffb27a' },
+  { id:'relationship-radar', name:'Relationship Radar', color:'#b39cff' },
+  { id:'random-acts', name:'Random Acts of Perspective', color:'#ffc93c' },
+];
+
+const raw = {
+'main-character':[
+["I didn't get invited to the group chat plan.","The main character never gets invited early. That's why there's an act two."],
+["Nobody liked my story in 4 minutes.","You checked. Twice. That's not being ignored, that's being thorough."],
+["My life would be so much better with a soundtrack.","It has one. It's called Spotify Wrapped, and it already knows you had main-character delusions in March."],
+["I feel invisible today.","You are currently visible to at least one government satellite. Small wins."],
+["Why does everything happen to me?","Statistically, things happen to literally everyone, at roughly the same rate. You've just got main-character narration running in the background."],
+["I deserve an apology.","You might. You also deserve to stop waiting by the phone for it like it's a season finale."],
+["This is the worst day of my life.","Bold claim for a Tuesday with wifi."],
+["Everyone's looking at me.","They're looking at their own phones, reflecting your face back at you. Optical illusion, not audience."],
+["I need a glow-up montage moment.","You had one. It was called 'buying a new pillow.' You just didn't play music during it."],
+["My villain arc starts now.","Cool, what's the evil plan — replying to texts on time?"],
+["I feel like the universe is against me.","The universe is 13.8 billion years old and has never once heard of you. Rude, but also kind of a relief."],
+["Everyone else's life looks like a movie.","So does yours, from twelve feet away, filtered, with the boring 90% cut out."],
+["I want main-character lighting all the time.","That's called golden hour and it happens twice a day for free. You're just usually looking at your phone during it."],
+["This plot twist wasn't supposed to happen to ME.","Every side character in every story thinks that too. It's kind of the whole genre."],
+["I need my moment.","You had one this morning. The coffee was hot and nobody talked to you. That was the moment. You walked right past it."],
+],
+'grass-greener':[
+["Their house is so much nicer.","Their mortgage is so much scarier."],
+["I wish I had their job.","You've seen their Instagram, not their Sunday-night dread."],
+["They seem to have it all figured out.","So does everyone, in a 15-second clip with good lighting."],
+["I want their confidence.","It's rented, not owned. Everyone's is."],
+["Their relationship looks perfect.","You've seen the anniversary post, not the argument about dishes twenty minutes earlier."],
+["I wish I had their body.","You'd also get their knees, their allergies, and their weird uncle. Package deal."],
+["They travel so much.","And spend the whole flight anxious about their inbox, same as you would."],
+["Their kids are so well-behaved.","That photo was taken after forty minutes of bribery, off-camera."],
+["I want their car.","You want the car. You do not want the car payment. Be honest."],
+["They never seem stressed.","They are. They just have better posture about it."],
+["Their skin is flawless.","Their skincare routine has eleven steps and a strong sense of personal failure if step nine is skipped."],
+["I wish I had their social life.","Their social battery dies at 9pm sharp, same as everyone's."],
+["They got the promotion.","They also got the 6am emails. Ask them in six months."],
+["Their garden looks incredible.","So does yours, in the two weeks a year you actually weed it."],
+["I want what they have.","You have never once wanted what they have at 3am when they can't sleep either."],
+],
+'first-world':[
+["My phone was at 12% for a whole hour.","You survived. Historians will not write about this."],
+["The wifi buffered for six seconds.","Somewhere, a person is thrilled to have running water. You're mad about a spinning wheel."],
+["My food delivery was four minutes late.","A stranger drove through traffic to bring you a burrito. Show some respect."],
+["The coffee shop got my order wrong.","You now have a free complaint AND a beverage. That's a win disguised as a loss."],
+["My streaming app added another loading screen.","You have access to more entertainment than any king in history and you're mad about three seconds of it."],
+["My package is arriving tomorrow instead of today.","A robot warehouse and several vehicles are conspiring to deliver you a thing you don't need urgently. Patience."],
+["My smart home light didn't turn on with my voice.","You have a magic house that mostly works and you're annoyed it's not perfect magic."],
+["The self-checkout needed 'assistance in the bagging area.'","This is the closest thing to a boss battle most days will offer you."],
+["My air fryer is taking too long.","Air is frying your food. Sit with that for a second."],
+["My playlist algorithm doesn't know me.","A computer studies your listening habits daily and you're upset it guessed wrong once."],
+["The car's parking sensor beeped a little early.","The car is trying to save your bumper and your ego at the same time."],
+["My noise-cancelling headphones let a little sound through.","You're complaining about the 2% of noise a $300 gadget failed to erase from existence."],
+["The GPS took me a slightly longer route.","A satellite in space, correctly, is trying to get you home."],
+["My phone update took three minutes.","Three minutes. You've spent longer deciding what to eat."],
+["The group chat has too many notifications.","That's called having friends. Historically a rarer resource than a quiet phone."],
+],
+'glow-up':[
+["I hate how I look in every photo.","You look exactly like a person, which is the one thing every photo has ever captured correctly."],
+["I need to fix my skin before I go out.","Nobody at the party is running a skin audit. They're worried about their own."],
+["I wish I looked like the filtered version of me.","That version doesn't laugh at your jokes or hug anyone back. Overrated."],
+["My 'before' photo haunts me.","It's just you existing before you knew this photo would ever matter. Let it rest."],
+["I look tired today.","You are tired today. The face is just accurately reporting the news."],
+["I need the 'perfect' outfit to feel okay.","You've felt fine in sweatpants before. This is a plot twist you're choosing to forget."],
+["Everyone's more photogenic than me.","Everyone has a bad-angle graveyard on their camera roll they never show you. Yours just feels louder because you took it."],
+["I zoomed in on my own selfie again.","Nobody has ever zoomed in on you the way you zoom in on you. Nobody. Not once."],
+["I wish my smile was different.","Somebody, somewhere, has spent real money trying to get a smile that looks like the one you're currently frowning about."],
+["I compared myself to someone at the gym.","They're comparing themselves to someone else at the same gym. It's comparisons all the way down. Get off the ladder."],
+["I feel like I need to 'fix' something about my face.","Your face is doing its actual job: being recognizably, specifically you. Ten out of ten, no notes."],
+["I saw an old photo and cringed.","That person didn't know what was coming and was doing their best anyway. Cut them some slack, it's still you."],
+["My 'good side' isn't cooperating today.","You have two sides and a personality. Statistically the odds are in your favor."],
+["I wish I aged differently.","You're aging on schedule, same as every human who's ever lived long enough to complain about it."],
+["I feel plain next to everyone else.","Plain is a lighting problem, not a permanent condition. Turn on a lamp and reconsider."],
+],
+'upgrade-trap':[
+["My phone is only two years old but feels ancient.","It does everything it did on day one. You've just been marketed into shame about a rectangle."],
+["I need the new version of this thing I already own.","The old version still works. That's not nostalgia talking, that's just true."],
+["I'd be happier with more money.","Ask anyone with more money. They want more money too. It's a treadmill, not a finish line."],
+["My laptop is 'slow' now.","It opens the internet and shows you cat videos on command. NASA would've killed for this in 1969."],
+["I need a bigger TV.","Your current TV shows the same movie. The only thing getting bigger is the movie's face."],
+["I want the limited edition version.","It does the same thing as the regular one, just with a color nobody asked for and a price nobody needed."],
+["I feel behind because I don't have the latest gadget.","You'll feel exactly as behind next year about the gadget that replaces this one. The finish line moves on purpose."],
+["I keep window shopping things I don't need.","Congratulations, you've discovered free entertainment that costs money if you're not careful."],
+["My car has 80,000 miles and I want a new one.","It has also successfully avoided every accident it's ever been in. That's the real feature list."],
+["I want the fancy version of my morning coffee.","The $2 version and the $7 version both just make you slightly less tired. One of them also funds someone's branding photoshoot."],
+["I feel poor scrolling luxury content.","You're watching a highlight reel edited by someone whose entire job is making you feel exactly like this."],
+["I want a house like the one in that show.","That house has a production crew living in it too, off-camera, moving furniture between takes."],
+["My shoes are 'outdated.'","They still connect your feet to the ground successfully. Physics doesn't care about the season's colorway."],
+["I want the subscription with more features I won't use.","You have three apps right now doing that exact thing already. Go check."],
+["I compared my salary to a stranger online.","You compared your full financial reality to a screenshot with zero context. That's not math, that's a horror movie you wrote yourself."],
+],
+'relationship-radar':[
+["My friend group seems tighter than mine.","You saw the reunion trip. You didn't see the three-year gap where nobody texted back."],
+["That couple never fights.","They fought in the car on the way to the photo where they don't look like they fight."],
+["I wish my partner was more like theirs.","Their partner wishes the exact same thing about someone else's partner. It's a group chat you're not in, and it's exhausting."],
+["I feel like everyone has better friends than me.","'Better' is doing a lot of work in that sentence for people you've known for four minutes on the internet."],
+["I'm jealous of how easily they make friends.","You're seeing the finished friendship, not the eleven awkward hangouts that built it."],
+["My family isn't as close as theirs looks.","Nobody posts the Thanksgiving argument about the gravy. Every family has one. Yours is just quieter about it publicly."],
+["I wish I had someone who 'got' me instantly.","Every 'instant connection' story left out the six conversations first that went nowhere."],
+["They have so many people who show up for them.","You have people who'd show up too. You just haven't tested it, because testing it feels scary."],
+["My friendships feel low-effort compared to theirs.","The high-effort friendships you're picturing usually have one exhausted friend doing all the planning. Ask them."],
+["I want a love story like the movies.","The movie love story is 90 minutes. Real ones include someone forgetting to take the trash out for a week straight."],
+["I feel behind because my friends are getting married and I'm not.","Marriage isn't a finish line, it's a different race entirely, with its own new complaints you haven't unlocked yet."],
+["I wish people reached out to me first more.","You could also send the first text. Radical idea, tested, works surprisingly often."],
+["Their group chat looks so fun.","It's 40% memes, 40% logistics, and 20% someone being ignored. Same as yours, statistically."],
+["I feel replaceable in my friendships.","So does the friend you're comparing yourself to. Nobody feels as secure as their Instagram implies."],
+["I wish I had a person who understood me without explaining.","That takes years, not vibes. You're comparing chapter one to someone else's chapter twelve."],
+],
+'random-acts':[
+["I'm bored.","You have access to every book, film, and song ever recorded, instantly, and you're bored. Impressive, honestly."],
+["Nothing exciting ever happens to me.","You woke up on a rock spinning through space at 67,000 mph and called it a slow day."],
+["I wish I could time travel to fix things.","You get to try again literally tomorrow. That's basically time travel with extra steps."],
+["I feel like I'm wasting my twenties.","You're spending them, not wasting them. Spending implies you got something. You did — today."],
+["I want a redo on today.","You get one in about eight hours. It's called tomorrow. Free of charge, no waitlist."],
+["I keep waiting for my 'real life' to start.","This is the real one. It's been running this whole time without asking your permission."],
+["I feel like I have nothing going on.","You have a body that's been quietly keeping you alive with zero conscious effort for years. That's a lot going on, actually."],
+["I wish I appreciated things more.","You're reading a website about appreciating things more. That's step one. You did it. Weird flex, but okay."],
+["I'm annoyed the weekend is over.","You got a weekend. Some historical figures worked seven days a week their whole lives and never once got a streaming recommendation."],
+["I wish I had more time.","You have exactly the same 24 hours as everyone who's ever finished a novel while also having a job."],
+["I feel unlucky today.","You're literate, online, and complaining in a language a machine understands. Weirdly lucky, historically speaking."],
+["I want to skip ahead to when things are easier.","Future-you is going to look back at right-now-you and miss how uncomplicated this actually was. Rude, but that's how it works."],
+["I feel like I should have it figured out by now.","Nobody has it figured out. They've just gotten better at looking calm while confused. You can fake that part starting today."],
+["I'm mad about something small.","Being mad about something small means the big stuff is currently fine. That's not nothing. That's a genuinely decent Tuesday."],
+["I don't feel grateful, I just feel tired.","Fair. Gratitude and exhaustion are allowed to sit in the same room. Have a snack, then come back to this page."],
+],
+};
+
+// flatten into entries with category refs
+const catById = Object.fromEntries(categories.map(c=>[c.id,c]));
+const entries = [];
+Object.entries(raw).forEach(([catId, list])=>{
+  list.forEach(([setup,punchline])=>{
+    entries.push({ catId, setup, punchline });
+  });
+});
+entries.forEach((e,i)=> e.id = i);
+
+let activeCat = 'all';
+const saved = new Set(); // in-memory only, session-based
+
+function scrollToId(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderCategories(){
+  const row = document.getElementById('catRow');
+  row.innerHTML = '';
+  const allChip = makeChip({name:'All', color:'#ffffff'}, 'all');
+  row.appendChild(allChip);
+  categories.forEach(c=> row.appendChild(makeChip(c, c.id)));
+}
+
+function makeChip(cat, id){
+  const btn = document.createElement('button');
+  btn.className = 'chip' + (activeCat===id ? ' active':'');
+  btn.style.setProperty('--dot-color', cat.color);
+  btn.innerHTML = '<span class="dot"></span>' + cat.name;
+  btn.onclick = ()=>{ activeCat = id; renderCategories(); renderGrid(); };
+  return btn;
+}
+
+function renderGrid(){
+  const grid = document.getElementById('grid');
+  const title = document.getElementById('feedTitle');
+  const list = activeCat==='all' ? entries : entries.filter(e=>e.catId===activeCat);
+  title.textContent = activeCat==='all' ? 'All entries' : catById[activeCat].name;
+  grid.innerHTML = '';
+  list.forEach(e=>{
+    const cat = catById[e.catId];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.setProperty('--cat-color', cat.color);
+    card.innerHTML = `
+      <div class="cat-tag">${cat.name}</div>
+      <p class="setup">"${e.setup}"</p>
+      <p class="punchline">${e.punchline}</p>
+      <div class="card-actions">
+        <button data-action="save" aria-label="Save">${saved.has(e.id) ? '♥ Saved' : '♡ Save this'}</button>
+        <button data-action="copy" aria-label="Copy">Copy text</button>
+      </div>
+    `;
+    card.querySelector('[data-action="save"]').onclick = ()=> toggleSave(e.id);
+    card.querySelector('[data-action="copy"]').onclick = ()=> copyEntry(e);
+    if(saved.has(e.id)) card.querySelector('[data-action="save"]').classList.add('saved');
+    grid.appendChild(card);
+  });
+}
+
+function toggleSave(id){
+  if(saved.has(id)) saved.delete(id); else saved.add(id);
+  document.getElementById('favCount').textContent = saved.size;
+  renderGrid();
+  renderDrawer();
+}
+
+function copyEntry(e){
+  const text = `"${e.setup}" — ${e.punchline}`;
+  navigator.clipboard?.writeText(text).then(()=> showToast('Copied')).catch(()=> showToast('Copy failed'));
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(()=> t.classList.remove('show'), 1600);
+}
+
+function spin(){
+  const pool = activeCat==='all' ? entries : entries.filter(e=>e.catId===activeCat);
+  const pick = pool[Math.floor(Math.random()*pool.length)];
+  const cat = catById[pick.catId];
+  const spotlight = document.getElementById('spotlight');
+  spotlight.style.setProperty('--cat-color', cat.color);
+  document.getElementById('spotCat').textContent = cat.name;
+  document.getElementById('spotSetup').textContent = '"' + pick.setup + '"';
+  document.getElementById('spotPunch').textContent = pick.punchline;
+  spotlight.classList.remove('spotlight-fade');
+  void spotlight.offsetWidth;
+  spotlight.classList.add('spotlight-fade');
+}
+
+function openDrawer(){
+  renderDrawer();
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+function renderDrawer(){
+  const body = document.getElementById('drawerBody');
+  if(saved.size===0){
+    body.innerHTML = "<div class=\"drawer-empty\">You haven't saved anything yet. Very on-brand.</div>";
+    return;
+  }
+  body.innerHTML = '';
+  [...saved].forEach(id=>{
+    const e = entries[id];
+    const cat = catById[e.catId];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.setProperty('--cat-color', cat.color);
+    card.innerHTML = `
+      <div class="cat-tag">${cat.name}</div>
+      <p class="setup">"${e.setup}"</p>
+      <p class="punchline">${e.punchline}</p>
+      <div class="card-actions">
+        <button data-action="remove">Remove</button>
+        <button data-action="copy">Copy text</button>
+      </div>
+    `;
+    card.querySelector('[data-action="remove"]').onclick = ()=> toggleSave(id);
+    card.querySelector('[data-action="copy"]').onclick = ()=> copyEntry(e);
+    body.appendChild(card);
+  });
+}
+
+renderCategories();
+renderGrid();
+spin();
+</script>
+
+</body>
+</html>
